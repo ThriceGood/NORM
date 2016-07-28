@@ -3,7 +3,6 @@ from database import Database
 
 db = Database()
 query =	db.query
-initialize_models = db.build_tables(models)
 
 class Model:
 
@@ -14,6 +13,10 @@ class Model:
 		for k, v in self.__dict__.items():
 			if not isinstance(v, TypeParent):
 				raise ValueError('{} is not a valid object type: {}'.format(k, type(v)))
+
+	@staticmethod
+	def initialize_models(models):
+		db.build_tables(models)
 
 	def insert(self):
 		db.insert(self)
