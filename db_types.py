@@ -2,7 +2,6 @@
 
 class TypeParent(object):
 	attrs = ['value', 'allow_null', 'primary_key', 'unique']
-	# attrs = ['allow_null', 'primary_key', 'unique']
 	def __init__(self, Type, **kwargs):
 		for k, v in kwargs.items():
 			if k in TypeParent.attrs:
@@ -22,6 +21,12 @@ class TextType(TypeParent):
 		parent.__init__(self, **kwargs)
 		self.type = 'TEXT'
 
+class CharType(TypeParent):
+	def __init__(self, **kwargs):
+		self.attrs = ['size']
+		parent = super(CharType, self)
+		parent.__init__(self, **kwargs)
+		self.type = 'CHAR({})'.format(self.size)
 
 class IntegerType(TypeParent):
 	def __init__(self, **kwargs):
@@ -29,7 +34,6 @@ class IntegerType(TypeParent):
 		parent = super(IntegerType, self)
 		parent.__init__(self, **kwargs)
 		self.type = 'INTEGER'
-
 
 class ForeignKeyType(TypeParent):
 	def __init__(self, **kwargs):

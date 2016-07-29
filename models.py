@@ -1,4 +1,4 @@
-from db_types import IntegerType, TextType, ForeignKeyType
+from db_types import IntegerType, TextType, ForeignKeyType, CharType
 from model_parent import Model, query
 
 class Car(Model):
@@ -17,13 +17,13 @@ class Sack(Model):
 	def __init__(self, name=None, item=None):
 		self.id = IntegerType(primary_key=True)
 		self.name = TextType(value=name)
-		self.item = ForeignKeyType(relation=Item)
 
 class Item(Model):
 
 	def __init__(self, name=None, weight=None):
+		self.sack = ForeignKeyType(relation=Sack)
 		self.id = IntegerType(primary_key=True)
-		self.name = TextType(value=name)
+		self.name = CharType(value=name, size=20)
 		self.weight = IntegerType(value=weight)
 
 
