@@ -19,6 +19,6 @@ class Model:
 		db.build_tables(models)
 
 	def insert(self):
-		db.insert(self)
+		return db.insert(self)
 
 

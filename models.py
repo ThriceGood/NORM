@@ -20,8 +20,8 @@ class Sack(Model):
 
 class Item(Model):
 
-	def __init__(self, name=None, weight=None):
-		self.sack = ForeignKeyType(relation=Sack)
+	def __init__(self, name=None, weight=None, sack=None):
+		self.sack = ForeignKeyType(value=sack, relation=Sack)
 		self.id = IntegerType(primary_key=True)
 		self.name = CharType(value=name, size=20)
 		self.weight = IntegerType(value=weight)

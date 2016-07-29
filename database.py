@@ -31,7 +31,9 @@ class Database:
 		try:
 			cursor.execute(sql)
 			self.database.commit()
+			return cursor.lastrowid
 		except Exception as e:
+			# maybe i want to fail here?
 			pass
 
 	@staticmethod
@@ -47,7 +49,6 @@ class Database:
 			model = Model()
 			model.validate()
 			table = self.get_class_name(Model)
-			# table = Model.__name__.lower()
 			sql = 'CREATE TABLE IF NOT EXISTS {} ('.format(table)
 			for k, v in model.__dict__.items():
 				values = v.__dict__
@@ -68,7 +69,7 @@ class Database:
 				sql += cols
 			sql = '{})'.format(sql.rstrip(','))
 			print sql
-			# self.execute_sql(sql)
+			self.execute_sql(sql)
 
 	def insert(self, model):
 		table = self.get_model_name(model)
@@ -76,18 +77,21 @@ class Database:
 		keys = ''
 		values = ''
 		for k, v in model.__dict__.items():
-			if v.__dict__.get('auto_increment'):
+			if k == 'id':
 				continue
+			if isinstance(v, ForeignKeyType):
+				k = '{}_id'.format(k)
 			keys += '{},'.format(k)
-			val = '"{}",' if v.type == 'TEXT' else '{},'
+			val = '"{}",' if 'TEXT' in v.type or 'CHAR' in v.type else '{},'
 			values += val.format(v.value)
 		keys = keys.rstrip(',')
 		values = values.rstrip(',')
 		sql += '({}) VALUES ({})'.format(keys, values)
-		self.execute_sql(sql)
+		lastrow = self.execute_sql(sql)
+		return lastrow
 
 	def query(self, model, id=None, where=None, operator='AND', join=None, order_asc=None, order_desc=None):
-		table = self.get_model_name(model)
+		table = self.get_class_name(model)
 		sql = 'SELECT * FROM {} '.format(table)
 		if id:
 			sql += 'WHERE id={}'.format(id)
@@ -99,11 +103,11 @@ class Database:
 						sql += self.add_where_clause(k, li)
 						sql += 'OR'
 					sql = sql.rstrip('OR')
-				sql += self.add_where(k, v)
+				sql += self.add_where(k, v
 				sql += operator
 			sql = sql.rstrip(operator)
 		if join:
-			sql += self.add_join()
+			sql += self.add_join(table, join)
 		if order_asc:
 			sql += self.add_order(order_asc, 'ASC')
 		elif order_desc:
@@ -128,5 +132,7 @@ class Database:
 		return 'ORDER BY {} {} '.format(column, order)
 
 	@staticmethod
-	def add_join():
-		return ''
+	def add_join(table, relation):
+		related_table = Database.get_class_name(relation)
+		sql = ' INNER JOIN {1} ON {0}.id == {0}_id '.format(table, related_table)
+		return sql
